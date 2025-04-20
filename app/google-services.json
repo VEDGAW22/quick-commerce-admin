@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "327503088429",
+    "firebase_url": "https://fastfit-84c9f-default-rtdb.firebaseio.com",
+    "project_id": "fastfit-84c9f",
+    "storage_bucket": "fastfit-84c9f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327503088429:android:9353cc5d6756f7782461a4",
+        "android_client_info": {
+          "package_name": "com.example.quickcommerceadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCI4qruDW0_wiv9uEdYidZ1Odwkg1JViTI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

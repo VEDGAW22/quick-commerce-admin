@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Quick Commerce Admin</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="login_or_sign_up">Login or Sign Up</string>
+    <string name="enter_a_phone_number">Enter a phone number</string>
+    <string name="fasfits">FasFits</string>
+    <string name="currency_symbol">₹</string>
+</resources>
