@@ -42,7 +42,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation("androidx.gridlayout:gridlayout:1.0.0")
-    implementation(libs.google.firebase.storage) // Correct format
+    implementation(libs.google.firebase.storage)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database) // Correct format
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

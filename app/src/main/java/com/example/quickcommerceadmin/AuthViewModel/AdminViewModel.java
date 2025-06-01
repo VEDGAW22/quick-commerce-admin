@@ -23,10 +23,15 @@ import java.util.List;
 public class AdminViewModel extends ViewModel {
 
     private final MutableLiveData<List<Product>> productListLiveData = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Product>> filteredProductListLiveData = new MutableLiveData<>(new ArrayList<>());
     private List<Product> cachedProducts = new ArrayList<>();
 
     public LiveData<List<Product>> getProductListLiveData() {
         return productListLiveData;
+    }
+
+    public LiveData<List<Product>> getFilteredProductListLiveData() {
+        return filteredProductListLiveData;
     }
 
     // Interface for image upload callback
@@ -68,29 +73,82 @@ public class AdminViewModel extends ViewModel {
         }
     }
 
-    // Method to upload product to Firebase
+    // Method to upload product to Firebase under AllProducts, ProductCategory, and ProductType
     public void uploadProduct(Product product, ArrayList<String> imageUrls) {
         product.setImageUrls(imageUrls);
         String category = product.getCategory();
+        String productType = product.getType(); // Assuming productType is a field in your model
 
-        DatabaseReference reference = FirebaseDatabase.getInstance()
+        DatabaseReference allProductsRef = FirebaseDatabase.getInstance()
+                .getReference("Admins")
+                .child("AllProducts");
+
+        DatabaseReference categoryRef = FirebaseDatabase.getInstance()
                 .getReference("Admins")
                 .child("ProductCategory")
                 .child(category);
 
-        String productId = reference.push().getKey();
+        DatabaseReference productTypeRef = FirebaseDatabase.getInstance()
+                .getReference("Admins")
+                .child("ProductType")
+                .child(productType);
+
+        String productId = allProductsRef.push().getKey();
         if (productId != null) {
             product.setId(productId);
-            reference.child(productId).setValue(product)
-                    .addOnSuccessListener(unused -> Log.d("AdminViewModel", "Product uploaded: " + product.getTitle()))
-                    .addOnFailureListener(e -> Log.e("AdminViewModel", "Failed to upload product: " + e.getMessage()));
+
+            // Upload to AllProducts
+            allProductsRef.child(productId).setValue(product)
+                    .addOnSuccessListener(unused -> Log.d("AdminViewModel", "Product uploaded to AllProducts"))
+                    .addOnFailureListener(e -> Log.e("AdminViewModel", "Failed to upload product to AllProducts: " + e.getMessage()));
+
+            // Upload to ProductCategory
+            categoryRef.child(productId).setValue(product)
+                    .addOnSuccessListener(unused -> Log.d("AdminViewModel", "Product uploaded to ProductCategory"))
+                    .addOnFailureListener(e -> Log.e("AdminViewModel", "Failed to upload product to ProductCategory: " + e.getMessage()));
+
+            // Upload to ProductType
+            productTypeRef.child(productId).setValue(product)
+                    .addOnSuccessListener(unused -> Log.d("AdminViewModel", "Product uploaded to ProductType"))
+                    .addOnFailureListener(e -> Log.e("AdminViewModel", "Failed to upload product to ProductType: " + e.getMessage()));
         } else {
             Log.e("AdminViewModel", "Failed to generate product ID");
         }
     }
 
-    // Method to fetch products from Firebase
-    public void fetchProductsFromFirebase(String category) {
+    // Fetch all products
+    public void fetchAllProducts() {
+        DatabaseReference reference = FirebaseDatabase.getInstance()
+                .getReference("Admins")
+                .child("AllProducts");
+
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Product> allProducts = new ArrayList<>();
+                if (snapshot.exists()) {
+                    for (DataSnapshot productSnapshot : snapshot.getChildren()) {
+                        Product product = productSnapshot.getValue(Product.class);
+                        if (product != null) {
+                            allProducts.add(product);
+                        }
+                    }
+                }
+                cachedProducts = allProducts;
+                productListLiveData.setValue(allProducts);
+                filteredProductListLiveData.setValue(allProducts); // So filter works too
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("AdminViewModel", "Error fetching products from AllProducts", error.toException());
+                productListLiveData.setValue(null);
+            }
+        });
+    }
+
+    // Fetch products by category
+    public void fetchProductsByCategory(String category) {
         DatabaseReference reference = FirebaseDatabase.getInstance()
                 .getReference("Admins")
                 .child("ProductCategory")
@@ -99,18 +157,16 @@ public class AdminViewModel extends ViewModel {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Product> productList = new ArrayList<>();
+                List<Product> categoryProducts = new ArrayList<>();
                 if (snapshot.exists()) {
                     for (DataSnapshot productSnapshot : snapshot.getChildren()) {
                         Product product = productSnapshot.getValue(Product.class);
                         if (product != null) {
-                            productList.add(product);
+                            categoryProducts.add(product);
                         }
                     }
                 }
-
-                cachedProducts = productList;
-                productListLiveData.setValue(productList);
+                productListLiveData.setValue(categoryProducts);
             }
 
             @Override
@@ -121,7 +177,8 @@ public class AdminViewModel extends ViewModel {
         });
     }
 
-    // Method to update a product in Firebase
+
+    // Method to update a product in Firebase (handles all relevant paths)
     public void updateProduct(Product product) {
         if (product == null || product.getId() == null || product.getCategory() == null) {
             Log.e("AdminViewModel", "updateProduct: Product is invalid or missing required fields.");
@@ -137,18 +194,39 @@ public class AdminViewModel extends ViewModel {
         reference.setValue(product)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("AdminViewModel", "Product updated successfully: " + product.getTitle());
-                    fetchProductsFromFirebase(product.getCategory());
+                    fetchProductsByCategory(product.getCategory());  // Fetch updated products
                 })
                 .addOnFailureListener(e -> {
                     Log.e("AdminViewModel", "Failed to update product: " + e.getMessage());
                 });
     }
 
-    // Method to fetch all products in the cache (for offline usage)
-    public List<Product> getCachedProducts() {
-        return cachedProducts;
+    // Method to filter products globally based on a search query
+    public void filterProducts(String query) {
+        if (query == null || query.isEmpty()) {
+            filteredProductListLiveData.setValue(cachedProducts); // Show all products if no search query
+            return;
+        }
+
+        if (cachedProducts == null || cachedProducts.isEmpty()) {
+            filteredProductListLiveData.setValue(new ArrayList<>());
+            return;
+        }
+
+        List<Product> filteredList = new ArrayList<>();
+        for (Product product : cachedProducts) {
+            if (product.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(product);
+            }
+        }
+
+        filteredProductListLiveData.setValue(filteredList);
     }
+
 }
+
+
+
 
 
 

@@ -6,7 +6,10 @@
     <color name="green">#8BC34A</color>
     <color name="cream">#E6D18E</color>
     <color name="blue">#2196F3</color>
-    <color name="lightblue">#85B6E9</color>
+    <color name="lightblues">#85B6E9</color>
     <color name="lightbluegray">#A2A2A2</color>
     <color name="lightyellow">#FFEB9C</color>">
+    <color name="orange">#FF9800</color>">
+    <color name="red">#FF5722</color>">
+    <color name="lightblue">#ADD8E6</color>
 </resources>

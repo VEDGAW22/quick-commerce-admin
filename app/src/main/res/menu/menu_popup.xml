@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menuOrdered"
+        android:title="Ordered"/>
+    <item
+        android:id="@+id/menuShipped"
+        android:title="Shipped"/>
+    <item
+        android:id="@+id/menuOutForDelivery"
+        android:title="Out for Delivery"/>
+    <item
+        android:id="@+id/menuDelivered"
+        android:title="Delivered"/>
+</menu>
